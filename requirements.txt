@@ -1,0 +1,7 @@
+selenium
+PyYAML
+webdriver-manager
+percy-selenium-python
+pymongo
+pycryptodomex
+python-dotenv
