@@ -15,6 +15,13 @@ This repository contains code for performing visual regression testing with Perc
 
 - Python 3.x
 - Pip
+- selenium
+- PyYAML
+- webdriver-manager
+- percy-selenium-python
+- pymongo
+- pycryptodomex
+- python-dotenv
 
 ### Installation
 
