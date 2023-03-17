@@ -5,3 +5,5 @@
 *.key
 
 __pycache__/
+
+tester_configs.yaml
