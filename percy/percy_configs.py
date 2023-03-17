@@ -1,6 +1,14 @@
+
+build_name = input('Enter the name of the CM build Number: ')
+if not build_name:
+    print('Default build name used "Basic Percy Test"')
+    build_name = 'Basic Percy Test'
+    exit()
+
+
 def get_desired_caps():
     desired_cap = {'project': 'Intrepid Percy',
-                   'build': 'Basic Percy Test',
+                   'build': build_name,
                    'os': 'Windows',
                    'os_version': '10',
                    'browser': 'Chrome',
