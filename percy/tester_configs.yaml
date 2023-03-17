@@ -1,0 +1,6 @@
+browserstack_timezone: BOISE
+browserstack_username: aarongoodrum_H2GPQ3
+chromedriver_local_path: /Program Files/chromedriver
+operating_system: WIN 10
+percy_branch: aaron_STAGE_Mar_17
+percy_url: https://qa.s.intrepidagile.com/
