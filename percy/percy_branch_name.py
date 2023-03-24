@@ -11,7 +11,7 @@ def get_percy_branch_name():
     
     if branch_name == 'MASTER' or branch_name == 'master':
         confirm_overwrite = input('WARNING: You are attempting to push to the master branch. Do you want to continue? (y/n): ')
-        if confirm_overwrite.lower() != 'y':
+        if confirm_overwrite.lower() != 'y' or 'Y' or 'yes' or 'Yes' or 'YES':
             print('Exiting without pushing to Percy...')
             exit()
     else:
