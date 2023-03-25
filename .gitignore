@@ -6,4 +6,4 @@
 
 __pycache__/
 
-.yaml/  # ignore .yaml files
+*.yaml
