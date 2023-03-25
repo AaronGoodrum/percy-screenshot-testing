@@ -1,6 +1,0 @@
-browserstack_timezone: BOISE
-browserstack_username: Tester name
-chromedriver_local_path: /Program Files/chromedriver
-operating_system: WIN 10
-percy_branch: Stage Test
-percy_url: https://qa.s.intrepidagile.com/
