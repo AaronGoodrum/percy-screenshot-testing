@@ -17,9 +17,10 @@ def run_percy():
     percy_support.login_page()
     # Splash Page
     percy_support.splash_page()
+     # Nav Menu
+    percy_support.navbar_page()
     # Home Page
     percy_support.home_page()
-    # Nav Menu
     # FAQ
     if percy_support.snapshots_to_take['FAQ Page']:
         percy_support.faq_page()
