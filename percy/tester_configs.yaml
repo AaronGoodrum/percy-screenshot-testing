@@ -1,0 +1,6 @@
+ operating_system: "OS"
+ browserstack_username: "<your-browserstack-username>"
+ chromedriver_local_path: "/chromedriver"
+ browserstack_timezone: "TIMEZONE"
+ percy_url: "https://<your-percy-url>/"
+ percy_branch: "<your-percy-branch-name>"
