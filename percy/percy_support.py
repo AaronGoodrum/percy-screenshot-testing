@@ -31,8 +31,6 @@ class PercySupport:
     def __init__(self):
         # init the page locators
         self.percy_objects = PercyObjects()
-        browserstack_username = os.environ.get('BROWSERSTACK_USERNAME')
-        browserstack_pw = decrypt_browserstack_password(browserstack_username, is_percy=False)
         self.percy_token = ''
         
         
@@ -103,6 +101,17 @@ class PercySupport:
             print('TimeoutException: ', locator[0] + " - " + locator[1])
             self.driver.save_screenshot(self.directory_path + '/wait_for_invisibility_key.png')
             self.end_test()
+
+    ####################################################################################################################
+    # is_element_displayed()
+    #  wait for the element to appear on the page
+    ####################################################################################################################
+    def is_element_displayed(self, locator):
+        try:
+            element = self.wait.until(ec.visibility_of_element_located(locator))
+            return element.is_displayed()
+        except TimeoutException:
+            return False
 
     ########################################################################################################################
     # click_element()
@@ -198,42 +207,83 @@ class PercySupport:
         # start the class
         self.click_element(self.percy_objects.qa_auto_start_class_btn)
 
+
+    ####################################################################################################################
+    # navigate_to_page
+    ####################################################################################################################
+    def navigate_to_page(self, click_element, page_objects, page_name):
+        # check navbar state
+        navbar_is_open = self.is_element_displayed(self.percy_objects.nav_close_menu_btn)
+        
+        # navigate to page
+        self.click_element(click_element)
+        self.wait_for_element(page_objects)
+
+        # close navbar if it is open
+        if navbar_is_open:
+            self.nav_menu(False)
+        
+        # take snapshot
+        if self.snapshots_to_take[page_name]:
+            percy_snapshot(self.driver, page_name)
+        
+        # open navbar if it was open before
+        if navbar_is_open:
+            self.nav_menu(True)
+ 
+    #################################################################################################################### 
+    # NAVBAR PAGE
+    ####################################################################################################################
+    def navbar_page(self):
+        # check navbar state
+        navbar_is_open = self.is_element_displayed(self.percy_objects.nav_close_menu_btn)
+
+        # open navbar if it's closed
+        if not navbar_is_open:
+            self.nav_menu(True)
+
+        # wait for navbar image to load
+        self.wait_for_element(self.percy_objects.nav_close_menu_btn)
+
+        # take snapshot
+        if self.snapshots_to_take['Nav Menu']:
+            percy_snapshot(self.driver, 'Nav Menu')
+
     ####################################################################################################################
     # Home Page
     ####################################################################################################################
     def home_page(self):
-        # wait for user image to load
-        self.wait_for_element(self.percy_objects.account_menu_user_image)
-
-        # open nav menu
-        self.click_element(self.percy_objects.nav_open_menu_btn)
-        self.wait_for_element(self.percy_objects.nav_points_progress_circle)
-
-        if self.snapshots_to_take['Home Page']:
-            percy_snapshot(self.driver, 'Home Page')
+        self.navigate_to_page(
+            self.percy_objects.nav_open_menu_btn, 
+            self.percy_objects.account_menu_user_image, 
+            'Home Page'
+        )
 
     ####################################################################################################################
     # FAQ Page
     ####################################################################################################################
     def faq_page(self):
-        self.click_element(self.percy_objects.nav_faq_launch)
-        self.wait_for_element(self.percy_objects.faq_page_description)
-        if self.snapshots_to_take['FAQ Page']:
-            percy_snapshot(self.driver, 'FAQ Page')
+        self.navigate_to_page(
+            self.percy_objects.nav_faq_launch, 
+            self.percy_objects.faq_page_description, 
+            'FAQ Page'
+        )
 
     ####################################################################################################################
     # Contact Page
     ####################################################################################################################
     def contact_page(self):
-        self.click_element(self.percy_objects.nav_contact_launch)
-        self.wait_for_element(self.percy_objects.contact3_image)
-        if self.snapshots_to_take['Contact Page']:
-            percy_snapshot(self.driver, 'Contact Page')
+        self.navigate_to_page(
+            self.percy_objects.nav_contact_launch,
+            self.percy_objects.contact3_image,
+            'Contact Page'
+        )
 
     ####################################################################################################################
     # Learning Path Page
     ####################################################################################################################
     def learning_path_page(self):
+
         self.click_element(self.percy_objects.nav_learning_paths_launch)
         self.wait_for_element(self.percy_objects.learning_path_accordion)
         self.click_element(self.percy_objects.learning_path_accordion)
@@ -246,18 +296,19 @@ class PercySupport:
             percy_snapshot(self.driver, 'Learning Path Modal')
             self.click_element(self.percy_objects.close_modal_btn)
             self.wait_for_invisibility(self.percy_objects.close_modal_btn)
-
+            
     ####################################################################################################################
     # Mission Page
     ####################################################################################################################
     def mission_page(self):
+
         self.click_element(self.percy_objects.nav_missions_launch)
         self.wait_for_element(self.percy_objects.mission_accordion)
         self.click_element(self.percy_objects.mission_accordion)
         self.wait_for_element(self.percy_objects.mission_tile)
         if self.snapshots_to_take['Mission Page']:
             percy_snapshot(self.driver, 'Mission Page')
-
+        
     ####################################################################################################################
     # Multicategory Page
     ####################################################################################################################
@@ -664,10 +715,8 @@ class PercySupport:
     # Content Page 2
     ####################################################################################################################
     def content_page2(self):
-        self.click_element(self.percy_objects.nav_new_page_launch)
-        self.wait_for_element(self.percy_objects.page_title)
-        if self.snapshots_to_take['Content Page 2']:
-            percy_snapshot(self.driver, 'Content Page 2')
+        
+        self.navigate_to_page(self.percy_objects.nav_new_page_launch, self.percy_objects.page_title, 'Content Page 2')
 
     ####################################################################################################################
     # 404 Not Found Page
@@ -690,8 +739,6 @@ class PercySupport:
         sys.exit()
 
 
-browserstack_username = os.environ.get('BROWSERSTACK_USERNAME')
-browserstack_pw = decrypt_browserstack_password(browserstack_username, is_percy=False)
 
 
 def child_process():

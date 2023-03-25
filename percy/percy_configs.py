@@ -18,6 +18,7 @@ def get_snapshots_to_take():
         'Forgot PW': TakeSnapshots,
         'Splash Page': TakeSnapshots,
         'Home Page': TakeSnapshots,
+        'Nav Menu': TakeSnapshots,
         'FAQ Page': TakeSnapshots,
         'Contact Page': TakeSnapshots,
         'Mission Page': TakeSnapshots,

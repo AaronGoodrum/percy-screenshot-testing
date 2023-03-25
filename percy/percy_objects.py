@@ -25,8 +25,12 @@ class PercyObjects:
         self.search_menu_input = ['id', 'search-query']
         self.search_menu_all_results_btn = ['css selector', 'a[href*="/content/search/all"]']
         self.gws_header_btn = ['id', 'header-workGroups']
+        
+        # navbar
         self.nav_open_menu_btn = ['css selector', 'div[class="navigation-controls"]>button[aria-expanded="false"]']
         self.nav_close_menu_btn = ['css selector', 'div[class="navigation-controls"]>button[aria-expanded="true"]']
+        
+        #navbar links
         self.nav_points_progress_circle = ['css selector', 'nav[class*="pinned"] div[class="navigation-progress__indicator"]:nth-child(1) svg[class="progress-circle"]']
         self.nav_faq_launch = ['css selector', 'a[href*="/faq"]']
         self.nav_contact_launch = ['css selector', 'a[href*="/contact"]']
