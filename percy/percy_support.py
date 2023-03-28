@@ -8,6 +8,7 @@ import os
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
+from selenium.webdriver.common.by import By
 from percy import percy_snapshot
 from time import sleep
 from selenium.common.exceptions import TimeoutException, NoSuchElementException, ElementClickInterceptedException, \
@@ -44,18 +45,17 @@ class PercySupport:
             percy_branch = get_percy_branch_name()
 
         # browserstack username & password
-        browserstack_username = os.environ['BROWSERSTACK_USERNAME']
+        browserstack_username = tester_configs['browserstack_username']
         browserstack_pw = decrypt_browserstack_password(browserstack_username, is_percy=False)
 
         # Init Percy
-        percy_token = decrypt_browserstack_password(browserstack_username, is_percy=True)
-        os.environ['PERCY_TOKEN'] = percy_token  # initialize the percy_files token
-        
-        if self.percy_token is None:
-            self.percy_token = decrypt_browserstack_password(self.browserstack_username, is_percy=True)
+        percy_token = os.environ.get('PERCY_TOKEN')
+        if percy_token is None:
+            percy_token = decrypt_browserstack_password(browserstack_username, is_percy=True)
 
-        os.environ['PERCY_TOKEN'] = self.percy_token  # initialize the percy_files token        
+        os.environ['PERCY_TOKEN'] = percy_token  # initialize the percy_files token
         os.environ['PERCY_BRANCH'] = percy_branch  # initialize the percy_files token
+
 
         # prepare the child process
         self.child_process = Process(target=child_process)
@@ -107,8 +107,9 @@ class PercySupport:
     #  wait for the element to appear on the page
     ####################################################################################################################
     def is_element_displayed(self, locator):
+        print('is_element_displayed: ', locator[0] + " - " + locator[1])
         try:
-            element = self.wait.until(ec.visibility_of_element_located(locator))
+            element = self.wait.until(ec.visibility_of_element_located((locator[0], locator[1])))
             return element.is_displayed()
         except TimeoutException:
             return False
@@ -211,53 +212,77 @@ class PercySupport:
     ####################################################################################################################
     # navigate_to_page
     ####################################################################################################################
-    def navigate_to_page(self, click_element, page_objects, page_name):
-        # check navbar state
-        navbar_is_open = self.is_element_displayed(self.percy_objects.nav_close_menu_btn)
-        
-        # navigate to page
+    def navigate_to_page(self, click_element, page_objects):
+        print('NAVIGATE TO PAGE: ', click_element[0] + " - " + click_element[1])
+        if not self.is_navbar_open():
+            self.open_navbar()
+
         self.click_element(click_element)
         self.wait_for_element(page_objects)
 
-        # close navbar if it is open
-        if navbar_is_open:
-            self.nav_menu(False)
-        
-        # take snapshot
+        if self.is_navbar_open():
+            self.close_navbar()
+
+
+    ####################################################################################################################
+    # NAVBAR STATE
+    ####################################################################################################################
+    def is_navbar_open(self):
+        button = self.driver.find_element(By.CSS_SELECTOR, "button[data-agile-lh='navigationToggleBtn']")
+        return button.get_attribute("aria-expanded") == "true"
+
+    def open_navbar(self):
+        self.click_element(self.percy_objects.nav_open_menu_btn)
+        self.wait_for_element(self.percy_objects.nav_points_progress_circle)
+
+
+    def close_navbar(self):
+        self.click_element(self.percy_objects.nav_close_menu_btn)
+        self.wait_for_element(self.percy_objects.nav_open_menu_btn)
+
+    ####################################################################################################################
+    # TAKE PAGE SNAPSHOT
+    ####################################################################################################################
+    def take_page_snapshot(self, page_name):
         if self.snapshots_to_take[page_name]:
+            print('taking snapshot: ', page_name)
             percy_snapshot(self.driver, page_name)
-        
-        # open navbar if it was open before
-        if navbar_is_open:
-            self.nav_menu(True)
- 
+    
+
     #################################################################################################################### 
     # NAVBAR PAGE
     ####################################################################################################################
     def navbar_page(self):
         # check navbar state
-        navbar_is_open = self.is_element_displayed(self.percy_objects.nav_close_menu_btn)
+        print('checking navbar state it is open')
+        # Find the button element
+        navbar_is_open = self.is_navbar_open()
 
         # open navbar if it's closed
+        print('opening navbar if it is closed')
         if not navbar_is_open:
-            self.nav_menu(True)
+            self.click_element(self.percy_objects.nav_open_menu_btn)
+            self.wait_for_element(self.percy_objects.nav_points_progress_circle)
 
         # wait for navbar image to load
         self.wait_for_element(self.percy_objects.nav_close_menu_btn)
 
         # take snapshot
-        if self.snapshots_to_take['Nav Menu']:
-            percy_snapshot(self.driver, 'Nav Menu')
+        self.take_page_snapshot('Nav Menu')
 
     ####################################################################################################################
     # Home Page
     ####################################################################################################################
     def home_page(self):
-        self.navigate_to_page(
-            self.percy_objects.nav_open_menu_btn, 
-            self.percy_objects.account_menu_user_image, 
-            'Home Page'
-        )
+        # check navbar state
+        navbar_is_open = self.is_navbar_open()
+
+        # close navbar if it's open
+        if navbar_is_open:
+            self.click_element(self.percy_objects.nav_close_menu_btn)
+            self.wait_for_element(self.percy_objects.nav_open_menu_btn)
+
+        self.take_page_snapshot('Home Page')
 
     ####################################################################################################################
     # FAQ Page
@@ -265,9 +290,9 @@ class PercySupport:
     def faq_page(self):
         self.navigate_to_page(
             self.percy_objects.nav_faq_launch, 
-            self.percy_objects.faq_page_description, 
-            'FAQ Page'
+            self.percy_objects.faq_page_description
         )
+        self.take_page_snapshot('FAQ Page')
 
     ####################################################################################################################
     # Contact Page
@@ -275,9 +300,9 @@ class PercySupport:
     def contact_page(self):
         self.navigate_to_page(
             self.percy_objects.nav_contact_launch,
-            self.percy_objects.contact3_image,
-            'Contact Page'
+            self.percy_objects.contact3_image
         )
+        self.take_page_snapshot('Contact Page')
 
     ####################################################################################################################
     # Learning Path Page
@@ -301,13 +326,14 @@ class PercySupport:
     # Mission Page
     ####################################################################################################################
     def mission_page(self):
-
-        self.click_element(self.percy_objects.nav_missions_launch)
-        self.wait_for_element(self.percy_objects.mission_accordion)
+        self.navigate_to_page(
+            self.percy_objects.nav_missions_launch,
+            self.percy_objects.mission_accordion
+        )
         self.click_element(self.percy_objects.mission_accordion)
         self.wait_for_element(self.percy_objects.mission_tile)
-        if self.snapshots_to_take['Mission Page']:
-            percy_snapshot(self.driver, 'Mission Page')
+        
+        self.take_page_snapshot('Mission Page')
         
     ####################################################################################################################
     # Multicategory Page

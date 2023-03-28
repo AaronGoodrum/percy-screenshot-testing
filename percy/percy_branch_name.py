@@ -1,7 +1,9 @@
 import datetime
+import os
 import yaml
+from pathlib import Path
 
-CONFIG_FILE_PATH = 'tester_configs.yaml'
+CONFIG_FILE_PATH = Path(os.path.dirname(os.path.abspath(__file__)) + "/" + 'tester_configs.yaml')
 
 def get_percy_branch_name():
     """

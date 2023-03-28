@@ -29,6 +29,7 @@ class PercyObjects:
         # navbar
         self.nav_open_menu_btn = ['css selector', 'div[class="navigation-controls"]>button[aria-expanded="false"]']
         self.nav_close_menu_btn = ['css selector', 'div[class="navigation-controls"]>button[aria-expanded="true"]']
+        self.nav_button_toggle = ['css selector', 'button[data-agile-lh="navigationToggleBtn"]']
         
         #navbar links
         self.nav_points_progress_circle = ['css selector', 'nav[class*="pinned"] div[class="navigation-progress__indicator"]:nth-child(1) svg[class="progress-circle"]']
